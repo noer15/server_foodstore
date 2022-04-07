@@ -20,13 +20,11 @@ async function index(req, res, next) {
     const deliveryAddresses = await DeliveryAddress.find({ user: req.user._id })
       .limit(parseInt(limit))
       .skip(parseInt(skip))
-      .sort("-createdAt")
-      .populate("user")
-      .select("-__v");
+      .sort("-createdAt");
     // (3) respon dengan data `deliveryAddresses`
     return res.json({
       data: deliveryAddresses,
-      count,
+      count: count,
     });
   } catch (error) {
     if (error && error.name == "ValidationError") {
@@ -49,19 +47,17 @@ async function store(req, res, next) {
       });
     }
 
-    await DeliveryAddress.create(req.body)
-      .then((item) => {
-        return res.json(item);
-      })
-      .catch((err) => {
-        if (err && err.name === "ValidationError") {
-          return res.json({
-            error: 1,
-            message: err.message,
-            fields: err.errors,
-          });
-        }
-      });
+    let payload = req.body;
+    let user = req.user;
+
+    // (1) buat instance `DeliveryAddress` berdasarkan payload dan data `user`
+    let address = new DeliveryAddress({ ...payload, user: user._id });
+
+    // (2) simpan ke instance di atas ke MongoDB
+    await address.save();
+
+    // (3) respon dengan data `address` dari MongoDB
+    return res.json(address);
   } catch (error) {
     new Error(error);
   }

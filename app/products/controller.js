@@ -10,52 +10,52 @@ const apiResponse = require("../../helpers");
 const { policyFor } = require("../policy");
 
 async function getProducts(req, res, next) {
-  let { limit = 10, skip = 0, q = "", category = "", tags = [] } = req.query;
-  let criteria = {};
-  if (q.length) {
-    criteria = {
-      ...criteria,
-      name: {
-        $regex: `${q}`,
-        $options: "i",
-      },
-    };
-  }
-  if (category.length) {
-    category = await categoryModel.findOne({
-      name: { $regex: `${category}` },
-    });
-    if (category) {
-      criteria = { ...criteria, category: category._id };
+  try {
+    let { limit = 10, skip = 0, q = "", category = "", tags = [] } = req.query;
+    let criteria = {};
+    if (q.length) {
+      criteria = {
+        ...criteria,
+        name: {
+          $regex: `${q}`,
+          $options: "i",
+        },
+      };
     }
-  }
-  if (tags.length) {
-    tags = await tagModel.find({
-      name: { $in: tags },
-    });
-    criteria = {
-      ...criteria,
-      tags: {
-        $in: tags.map((item) => item._id),
-      },
-    };
-  }
-  count = await productModel.find(criteria).countDocuments();
-  await productModel
-    .find(criteria)
-    .paginate(limit, skip)
-    .populate("category")
-    .populate("tags")
-    .select("-__v")
-    .then((result) => {
-      return res.status(200).json({
-        data: result,
-        count,
+    if (category.length) {
+      category = await categoryModel.findOne({
+        name: { $regex: `${category}` },
+        options: "i",
       });
-    })
-    .catch((e) => {
-      next(e);
+      if (category) {
+        criteria = { ...criteria, category: category._id };
+      }
+    }
+    if (tags.length) {
+      tags = await tagModel.find({
+        name: { $in: tags },
+      });
+      criteria = {
+        ...criteria,
+        tags: {
+          $in: tags.map((item) => item._id),
+        },
+      };
+    }
+    const count = await productModel.countDocuments(criteria);
+    const products = await productModel
+      .find(criteria)
+      .limit(parseInt(limit))
+      .skip(parseInt(skip))
+      .populate("category")
+      .populate("tags");
+    return res.status(200).json({
+      data: products,
+      count,
     });
+  } catch (error) {
+    return apiResponse.ErrorResponse(res, error);
+  }
 }
 
 async function productStore(req, res, next) {
@@ -245,8 +245,6 @@ async function productUpdate(req, res, next) {
     next(err);
   }
 }
-
-
 
 async function destroyProducts(req, res, next) {
   try {

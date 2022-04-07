@@ -5,17 +5,17 @@ const os = require("os");
 
 const deliveryAddressController = require("./controller");
 
-router.get("/delivery-address", deliveryAddressController.index);
+router.get("/delivery-addresses", deliveryAddressController.index);
 router.post(
-  "/delivery-address",
+  "/delivery-addresses",
   multer().none(),
   deliveryAddressController.store
 );
 router.put(
-  "/delivery-address/:id",
+  "/delivery-addresses/:id",
   multer().none(),
   deliveryAddressController.update
 );
-router.delete("/delivery-address/:id", deliveryAddressController.destroy);
+router.delete("/delivery-addresses/:id", deliveryAddressController.destroy);
 
 module.exports = router;

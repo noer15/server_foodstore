@@ -47,7 +47,7 @@ const policies = {
   },
 };
 
-function policyFor() {
+function policyFor(user) {
   let builder = new AbilityBuilder();
   if (user && typeof policies[user.role] === "function") {
     policies[user.role](user, builder);

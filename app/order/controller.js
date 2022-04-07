@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Order = require("./model");
 const OrderItem = require("../order-item/model");
 const CartItem = require("../cart/model");
@@ -48,17 +49,14 @@ async function store(req, res, next) {
     let { delivery_fee, delivery_address } = req.body;
     let items = await CartItem.find({ user: req.user._id }).populate("product");
 
-    // (2) cek apakah keranjang belanja kosong?
     if (!items.length) {
       return res.json({
         error: 1,
-        message: "Can not create order because you have no items in cart",
+        message: `Can not create order because you have no items in cart`,
       });
     }
-
+    // (2) buat order baru
     let address = await DeliveryAddress.findOne({ _id: delivery_address });
-    // create order but don't save it yet.
-    // using mongoose.Types.ObjectId() to generate id for saving ref
     let order = new Order({
       _id: new mongoose.Types.ObjectId(),
       status: "waiting_payment",
@@ -101,7 +99,7 @@ async function store(req, res, next) {
         fields: error.errors,
       });
     }
-    new Error(error);
+    next(error);
   }
 }
 async function update(req, res, next) {}
