@@ -6,6 +6,7 @@ module.exports = {
   rootPath: path.resolve(__dirname, ".."),
   secretKey: process.env.SECRET_KEY,
   serviceName: process.env.SERVIE_NAME,
+  mongoDB: process.env.MONGO_DB,
   dbHost: process.env.DB_HOST,
   dbUser: process.env.DB_USER,
   dbPort: process.env.DB_PORT,
